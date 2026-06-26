@@ -5,6 +5,7 @@ import tailwindcss from "@tailwindcss/vite";
 import tsConfigPaths from "vite-tsconfig-paths";
 import path from "path";
 import { fileURLToPath } from "url";
+import { nitro } from "nitro/vite";
 
 const __dirname = fileURLToPath(new URL(".", import.meta.url));
 
@@ -34,6 +35,9 @@ export default defineConfig({
         },
       },
       server: { entry: "server" },
+    }),
+    nitro({
+      preset: "vercel",
     }),
     viteReact(),
   ],
