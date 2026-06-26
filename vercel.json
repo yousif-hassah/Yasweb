@@ -1,5 +1,5 @@
 {
-  "buildCommand": "npx vinxi build",
+  "buildCommand": "npm run build:vercel",
   "env": {
     "SERVER_PRESET": "vercel"
   }
