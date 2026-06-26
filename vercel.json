@@ -1,3 +1,6 @@
 {
-  "buildCommand": "SERVER_PRESET=vercel vinxi build"
+  "buildCommand": "npx vinxi build",
+  "env": {
+    "SERVER_PRESET": "vercel"
+  }
 }
