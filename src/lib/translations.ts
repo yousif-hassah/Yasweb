@@ -87,8 +87,8 @@ export const dict = {
   about: {
     title: { en: "About Us", ar: "من نحن" },
     body: {
-      en: "RAZOR & CO is a modern barbershop with roots in classic craft. We sharpen our scissors before each cut, treat every chair like our own, and we'd rather take longer than rush a fade.",
-      ar: "ريزور أند كو صالون حلاقة حديث بجذور كلاسيكية. نشحذ مقصاتنا قبل كل قصّة، ونعامل كل كرسي كأنه ملكنا، ونفضّل الإتقان على السرعة.",
+      en: "At YaStudio, we pay attention to every detail—from the atmosphere of the studio and the way you're welcomed to the comfort of the space and the precision of every cut—so your time with us feels exceptional from the moment you arrive until the moment you leave.Our goal is more than simply providing a service. We strive to bring out the best version of every client by choosing a style that complements his features, personality, and lifestyle.At YaStudio, every visit is an experience, and every detail is designed to ensure you leave satisfied, comfortable, and confident",
+      ar: "بـ ياس استديو اهتمّينا بكل تفصيل من أجواء الاستديو وطريقة الاستقبال وراحة المكان إلى الدقة بكل لمسة حتى يكون وقتك ويانه مميز من البداية للنهاية. هدفنا مو بس نقدم خدمة هدفنا نطلع كل شخص بأفضل نسخة من نفسه. نختار الستايل اللي يناسب ملامحه وشخصيته وأسلوب حياته. بـ ياس استديو كل زيارة هي تجربة وكل تفصيل نسويه حتى تطلع وأنت راضي ومرتاح وواثق بنفسك",
     },
     barbersTitle: { en: "The Barbers", ar: "الحلاقون" },
     viewWork: { en: "View work & rate", ar: "شاهد الأعمال وقيّم" },
