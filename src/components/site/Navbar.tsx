@@ -5,8 +5,9 @@ import { dict } from "@/lib/translations";
 import { ShoppingBag, Globe, Menu, X } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import yasLogo from "@/assets/yas-logo-navy.png";
+import yasLogoWhite from "@/assets/yas-logo-white.png";
 
-export function Navbar() {
+export function Navbar({ transparent = false }: { transparent?: boolean }) {
   const { lang, setLang } = useI18n();
   const { count } = useCart();
   const [open, setOpen] = useState(false);
@@ -36,7 +37,9 @@ export function Navbar() {
       el.style.transition = "opacity 0.32s ease, transform 0.38s cubic-bezier(0.16, 1, 0.3, 1)";
       el.style.opacity = "1";
       el.style.transform = "translateY(0)";
-      const t = setTimeout(() => { isAnimating.current = false; }, 400);
+      const t = setTimeout(() => {
+        isAnimating.current = false;
+      }, 400);
       return () => clearTimeout(t);
     } else {
       isAnimating.current = true;
@@ -64,12 +67,18 @@ export function Navbar() {
   const toggle = () => setOpen((v) => !v);
 
   return (
-    <header className="sticky top-0 z-50 border-b border-border bg-background/80 backdrop-blur">
+    <header
+      className={`sticky top-0 z-50 transition-colors duration-300 ${
+        transparent && !open
+          ? "bg-transparent"
+          : "border-b border-border bg-background/80 backdrop-blur"
+      }`}
+    >
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4">
         {/* Logo — bigger on mobile */}
         <Link to="/" aria-label="YAS" className="flex items-center">
           <img
-            src={yasLogo}
+            src={transparent && !open ? yasLogoWhite : yasLogo}
             alt="YAS"
             className="h-11 w-auto md:h-13"
             loading="eager"
@@ -82,8 +91,14 @@ export function Navbar() {
             <Link
               key={l.to}
               to={l.to}
-              className="text-sm uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors duration-200"
-              activeProps={{ className: "text-foreground" }}
+              className={`text-sm uppercase tracking-wider transition-colors duration-200 ${
+                transparent
+                  ? "text-white/80 hover:text-white"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+              activeProps={{
+                className: transparent ? "text-white" : "text-foreground",
+              }}
             >
               {l.label}
             </Link>
@@ -93,14 +108,26 @@ export function Navbar() {
         <div className="flex items-center gap-3">
           <button
             onClick={() => setLang(lang === "en" ? "ar" : "en")}
-            className="flex items-center gap-1 text-xs uppercase tracking-wider text-muted-foreground hover:text-foreground transition-colors duration-200"
+            className={`flex items-center gap-1 text-xs uppercase tracking-wider transition-colors duration-200 ${
+              transparent && !open
+                ? "text-white/80 hover:text-white"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
             aria-label="Switch language"
           >
             <Globe className="h-4 w-4" />
             {lang === "en" ? "AR" : "EN"}
           </button>
 
-          <Link to="/cart" className="relative text-muted-foreground hover:text-foreground transition-colors duration-200" aria-label="Cart">
+          <Link
+            to="/cart"
+            className={`relative transition-colors duration-200 ${
+              transparent && !open
+                ? "text-white/80 hover:text-white"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+            aria-label="Cart"
+          >
             <ShoppingBag className="h-5 w-5" />
             {count > 0 && (
               <span className="absolute -end-2 -top-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-semibold text-primary-foreground">
@@ -111,7 +138,9 @@ export function Navbar() {
 
           {/* Hamburger — simple, reliable toggle button */}
           <button
-            className="md:hidden relative h-8 w-8 flex items-center justify-center text-foreground"
+            className={`md:hidden relative h-8 w-8 flex items-center justify-center transition-colors duration-200 ${
+              transparent && !open ? "text-white" : "text-foreground"
+            }`}
             onClick={toggle}
             aria-label={open ? "Close menu" : "Open menu"}
             aria-expanded={open}
@@ -143,7 +172,13 @@ export function Navbar() {
       {/* Mobile menu — CSS animated via useEffect, no outside-click interference */}
       <div
         ref={menuRef}
-        className="md:hidden border-t border-border bg-background/95 backdrop-blur-md shadow-lg"
+        className={`md:hidden border-t shadow-lg backdrop-blur-md ${
+          transparent && open
+            ? "border-border bg-background/95"
+            : transparent
+            ? "border-white/20 bg-black/70"
+            : "border-border bg-background/95"
+        }`}
       >
         <nav className="mx-auto flex max-w-7xl flex-col px-4 py-2">
           {links.map((l) => (
@@ -151,11 +186,23 @@ export function Navbar() {
               key={l.to}
               to={l.to}
               onClick={() => setOpen(false)}
-              className="group flex items-center justify-between border-b border-border/50 py-4 text-sm uppercase tracking-wider text-muted-foreground transition-colors duration-200 last:border-0 hover:text-foreground"
-              activeProps={{ className: "text-foreground" }}
+              className={`group flex items-center justify-between border-b py-4 text-sm uppercase tracking-wider transition-colors duration-200 last:border-0 ${
+                transparent && open
+                  ? "border-border/50 text-muted-foreground hover:text-foreground"
+                  : transparent
+                  ? "border-white/20 text-white/70 hover:text-white"
+                  : "border-border/50 text-muted-foreground hover:text-foreground"
+              }`}
+              activeProps={{
+                className: transparent && open ? "text-foreground" : transparent ? "text-white" : "text-foreground",
+              }}
             >
               <span>{l.label}</span>
-              <span className="text-muted-foreground/40 transition-transform duration-200 group-hover:translate-x-1">
+              <span
+                className={`transition-transform duration-200 group-hover:translate-x-1 ${
+                  transparent && open ? "text-muted-foreground/40" : transparent ? "text-white/30" : "text-muted-foreground/40"
+                }`}
+              >
                 →
               </span>
             </Link>

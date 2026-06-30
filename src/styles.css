@@ -64,7 +64,7 @@
 :root {
   --radius: 0.5rem;
   /* YAS — white-dominant (~90%) with deep navy accent */
-  --background: oklch(1 0 0);
+  --background: hwb(0 100% 0%);
   --foreground: oklch(0.22 0.03 250);
   --card: oklch(0.985 0.003 240);
   --card-foreground: oklch(0.22 0.03 250);

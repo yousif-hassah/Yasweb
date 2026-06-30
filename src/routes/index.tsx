@@ -110,13 +110,16 @@ function Home() {
   }, []);
 
   return (
-    <SiteLayout>
+    <SiteLayout isHome>
     <div ref={rootRef}>
       <h1 className="sr-only">
         YAS Barbershop — Premium Grooming & Haircuts in Baghdad | صالون ياس - حلاقة وعناية رجالية راقية في بغداد
       </h1>
       {/* SECTION 1 — HERO with looping video background */}
-      <section className="relative h-[92vh] min-h-[600px] w-full overflow-hidden">
+      <section
+        className="relative -mt-16 h-screen min-h-[600px] w-full overflow-hidden"
+        style={{ isolation: "isolate", transform: "translateZ(0)" }}
+      >
         <video
           autoPlay
           loop
@@ -124,8 +127,13 @@ function Home() {
           playsInline
           className="absolute inset-0 h-full w-full object-cover"
           src={heroVideo}
+          style={{
+            willChange: "transform",
+            transform: "translateZ(0)",
+            backfaceVisibility: "hidden",
+          }}
         />
-        <div className="absolute inset-0 bg-black/30" />
+        <div className="absolute inset-0 bg-black/30" style={{ transform: "translateZ(0)" }} />
         <div className="relative z-10 flex h-full flex-col items-center justify-center px-4 text-center text-white">
           <img
             src={yasLogoWhite}
@@ -153,9 +161,9 @@ function Home() {
             </div>
             <Link
               to="/portfolio"
-              className="reveal-right hidden items-center gap-1 text-xs uppercase tracking-widest text-muted-foreground hover:text-foreground md:inline-flex"
+              className="reveal-right inline-flex items-center gap-1 text-[10px] md:text-xs uppercase tracking-widest text-muted-foreground hover:text-foreground shrink-0"
             >
-              {dict.home.viewAll[lang]} <ChevronRight className="h-4 w-4" />
+              {dict.home.viewAll[lang]} <ChevronRight className="h-3.5 w-3.5" />
             </Link>
           </div>
           <div className="reveal-up grid grid-cols-2 gap-1 md:grid-cols-4">
@@ -216,9 +224,9 @@ function Home() {
             </div>
             <Link
               to="/shop"
-              className="reveal-right hidden items-center gap-1 text-xs uppercase tracking-widest text-muted-foreground hover:text-foreground md:inline-flex"
+              className="reveal-right inline-flex items-center gap-1 text-[10px] md:text-xs uppercase tracking-widest text-muted-foreground hover:text-foreground shrink-0"
             >
-              {dict.home.visitShop[lang]} <ChevronRight className="h-4 w-4" />
+              {dict.home.visitShop[lang]} <ChevronRight className="h-3.5 w-3.5" />
             </Link>
           </div>
           <div className="reveal-up grid grid-cols-2 gap-4 md:grid-cols-3 md:gap-6">

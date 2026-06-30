@@ -25,18 +25,24 @@ function AnnouncementBanner() {
   const content = <span className="text-xs uppercase tracking-widest">{msg}</span>;
   return (
     <div className="bg-foreground text-background">
-      <div className="mx-auto max-w-7xl px-4 py-2 text-center">
+      <div className="mx-auto max-w-7xl px-4 py-1 text-center">
         {data.link_url ? <a href={data.link_url} className="hover:underline">{content}</a> : content}
       </div>
     </div>
   );
 }
 
-export function SiteLayout({ children }: { children: ReactNode }) {
+export function SiteLayout({
+  children,
+  isHome = false,
+}: {
+  children: ReactNode;
+  isHome?: boolean;
+}) {
   return (
     <div className="flex min-h-screen flex-col bg-background text-foreground">
       <AnnouncementBanner />
-      <Navbar />
+      <Navbar transparent={isHome} />
       <main className="flex-1">{children}</main>
       <Footer />
     </div>
