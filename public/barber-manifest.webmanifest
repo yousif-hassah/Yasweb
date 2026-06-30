@@ -1,0 +1,25 @@
+{
+  "name": "YAS Barber Portal",
+  "short_name": "YAS Barber",
+  "description": "View your daily appointments and manage sessions.",
+  "start_url": "/barber",
+  "scope": "/barber",
+  "display": "standalone",
+  "background_color": "#0d1117",
+  "theme_color": "#0d1117",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/yasicon.jpg",
+      "sizes": "any",
+      "type": "image/jpeg",
+      "purpose": "any"
+    },
+    {
+      "src": "/yasicon.jpg",
+      "sizes": "any",
+      "type": "image/jpeg",
+      "purpose": "maskable"
+    }
+  ]
+}

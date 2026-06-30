@@ -1,5 +1,5 @@
 import { createFileRoute, redirect } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,7 +8,7 @@ import { SITE } from "@/lib/site-config";
 import { useI18n } from "@/hooks/use-i18n";
 import { toast } from "sonner";
 import type { User } from "@supabase/supabase-js";
-import { LogOut, Calendar, Phone, User as UserIcon, Trophy, X } from "lucide-react";
+import { LogOut, Calendar, Phone, User as UserIcon, Trophy, X, Download } from "lucide-react";
 import { formatIQD } from "@/lib/site-config";
 
 export const Route = createFileRoute("/barber")({
@@ -16,14 +16,110 @@ export const Route = createFileRoute("/barber")({
     meta: [
       { title: `Barber Portal — ${SITE.nameEn}` },
       { name: "robots", content: "noindex,nofollow" },
+      { name: "mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
+      { name: "apple-mobile-web-app-title", content: "YAS Barber" },
+    ],
+    links: [
+      { rel: "manifest", href: "/barber-manifest.webmanifest" },
+      { rel: "apple-touch-icon", href: "/yasicon.jpg" },
     ],
   }),
   component: BarberPortal,
 });
 
+/* ────────────────── PWA Install Hook ────────────────── */
+interface BeforeInstallPromptEvent extends Event {
+  prompt: () => Promise<void>;
+  userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
+}
+
+function usePWAInstall() {
+  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+  const [isInstalled, setIsInstalled] = useState(false);
+
+  useEffect(() => {
+    // Check if already running as standalone (installed)
+    if (
+      window.matchMedia("(display-mode: standalone)").matches ||
+      (window.navigator as any).standalone === true
+    ) {
+      setIsInstalled(true);
+      return;
+    }
+
+    const handler = (e: Event) => {
+      e.preventDefault();
+      setDeferredPrompt(e as BeforeInstallPromptEvent);
+    };
+
+    window.addEventListener("beforeinstallprompt", handler);
+
+    // Detect if app was installed
+    window.addEventListener("appinstalled", () => {
+      setIsInstalled(true);
+      setDeferredPrompt(null);
+    });
+
+    return () => window.removeEventListener("beforeinstallprompt", handler);
+  }, []);
+
+  const install = useCallback(async () => {
+    if (!deferredPrompt) return false;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    setDeferredPrompt(null);
+    return outcome === "accepted";
+  }, [deferredPrompt]);
+
+  return { canInstall: !!deferredPrompt && !isInstalled, isInstalled, install };
+}
+
+/* ────────────────── Service Worker & Manifest Override ────────────────── */
+function useBarberPWA() {
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    // Override the root manifest with the barber-scoped one
+    const existingManifest = document.querySelector('link[rel="manifest"]');
+    if (existingManifest) {
+      existingManifest.setAttribute("href", "/barber-manifest.webmanifest");
+    } else {
+      const link = document.createElement("link");
+      link.rel = "manifest";
+      link.href = "/barber-manifest.webmanifest";
+      document.head.appendChild(link);
+    }
+
+    // Register barber service worker
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker
+        .register("/barber-sw.js", { scope: "/barber" })
+        .then((reg) => {
+          console.log("[Barber SW] registered", reg.scope);
+        })
+        .catch((err) => {
+          console.warn("[Barber SW] registration failed", err);
+        });
+    }
+
+    // Restore original manifest on unmount (navigating away)
+    return () => {
+      const manifest = document.querySelector('link[rel="manifest"]');
+      if (manifest) {
+        manifest.setAttribute("href", "/manifest.webmanifest");
+      }
+    };
+  }, []);
+}
+
 function BarberPortal() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+
+  // Register service worker & set barber manifest for PWA
+  useBarberPWA();
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
@@ -140,6 +236,7 @@ function BarberDashboard({ user }: { user: User }) {
     queryKey: ["my-barber-day", user.id],
     queryFn: () => fetchDay(),
   });
+  const { canInstall, isInstalled, install } = usePWAInstall();
 
   const signOut = async () => {
     await qc.cancelQueries();
@@ -193,9 +290,31 @@ function BarberDashboard({ user }: { user: User }) {
             <Calendar className="h-4 w-4" /> {today}
           </div>
         </div>
-        <button onClick={signOut} className="inline-flex items-center gap-2 border border-border px-4 py-2 text-xs uppercase tracking-widest">
-          <LogOut className="h-3 w-3" /> {lang === "ar" ? "خروج" : "Sign out"}
-        </button>
+        <div className="flex items-center gap-2">
+          {/* PWA Install Button */}
+          {canInstall && (
+            <button
+              onClick={async () => {
+                const accepted = await install();
+                if (accepted) {
+                  toast.success(lang === "ar" ? "تم تثبيت التطبيق!" : "App installed!");
+                }
+              }}
+              className="inline-flex items-center gap-2 rounded-full border border-primary/50 bg-primary/10 px-4 py-2 text-xs uppercase tracking-widest text-primary transition-all hover:bg-primary/20 active:scale-95"
+            >
+              <Download className="h-3.5 w-3.5" />
+              {lang === "ar" ? "تثبيت التطبيق" : "Install App"}
+            </button>
+          )}
+          {isInstalled && (
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/10 px-3 py-1.5 text-[10px] uppercase tracking-widest text-emerald-600 border border-emerald-500/30">
+              {lang === "ar" ? "مثبّت ✓" : "Installed ✓"}
+            </span>
+          )}
+          <button onClick={signOut} className="inline-flex items-center gap-2 border border-border px-4 py-2 text-xs uppercase tracking-widest">
+            <LogOut className="h-3 w-3" /> {lang === "ar" ? "خروج" : "Sign out"}
+          </button>
+        </div>
       </div>
 
       <div className="mt-8">
