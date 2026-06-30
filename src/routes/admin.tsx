@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Fragment, useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { SiteLayout } from "@/components/site/SiteLayout";
@@ -607,6 +607,7 @@ function ServicesTab() {
 const BOOKING_STATUSES = ["pending", "confirmed", "paid", "cancelled", "no_show"] as const;
 function BookingsTab() {
   const { lang } = useI18n();
+  const qc = useQueryClient();
   const [filter, setFilter] = useState<string>("all");
   const [search, setSearch] = useState("");
   const [editing, setEditing] = useState<any | null>(null);
@@ -655,6 +656,7 @@ function BookingsTab() {
       const { data: cust } = await sb.from("customers").select("no_show_count").eq("id", customerId).single();
       await sb.from("customers").update({ no_show_count: (cust?.no_show_count ?? 0) + 1 }).eq("id", customerId);
     }
+    qc.invalidateQueries({ queryKey: ["earnings-bookings"] });
     refetch();
   };
   const buildConfirmMsg = (b: any) => {
@@ -674,11 +676,13 @@ function BookingsTab() {
   const deleteBooking = async (id: string) => {
     if (!confirm(lang === "ar" ? "حذف هذا الحجز؟" : "Delete this booking?")) return;
     await sb.from("bookings").delete().eq("id", id);
+    qc.invalidateQueries({ queryKey: ["earnings-bookings"] });
     refetch();
   };
   const saveEdit = async () => {
     if (!editing) return;
     await sb.from("bookings").update({ notes: editing.notes, starts_at: editing.starts_at, ends_at: editing.ends_at }).eq("id", editing.id);
+    qc.invalidateQueries({ queryKey: ["earnings-bookings"] });
     setEditing(null);
     refetch();
   };
