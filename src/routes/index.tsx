@@ -56,6 +56,19 @@ function Home() {
     },
   });
 
+  const { data: barbers } = useQuery({
+    queryKey: ["barbers", "teaser"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("barbers")
+        .select("id, name_ar, name_en, photo_url, sort_order")
+        .eq("active", true)
+        .order("sort_order")
+        .limit(4);
+      return data ?? [];
+    },
+  });
+
   useEffect(() => {
     if (typeof window === "undefined") return;
     gsap.registerPlugin(ScrollTrigger);
@@ -73,22 +86,25 @@ function Home() {
               x: 0,
               y: 0,
               opacity: 1,
-              duration: 1,
-              ease: "power3.out",
+              duration: 1.1,
+              ease: "power2.out",
               scrollTrigger: {
                 trigger: el,
-                start: "top 85%",
-                end: "top 20%",
-                toggleActions: "play reverse play reverse",
+                // Element enters view at 88% from top → starts animating in
+                start: "top 88%",
+                // Element leaves view at 15% from top → reverses out
+                end: "top 15%",
+                // play on enter, pause mid, resume on re-enter, reverse slowly on leave
+                toggleActions: "play none none reverse",
               },
             },
           );
         });
       };
 
-      build(fromLeft, { x: -120 });
-      build(fromRight, { x: 120 });
-      build(fromUp, { y: 80 });
+      build(fromLeft, { x: -50 });
+      build(fromRight, { x: 50 });
+      build(fromUp, { y: 45 });
     }, rootRef);
     return () => ctx.revert();
   }, []);
@@ -221,6 +237,67 @@ function Home() {
                 </div>
               </Link>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* SECTION 5 — ABOUT TEASER */}
+      <section className="panel panel-alt px-4 py-24">
+        <div className="mx-auto max-w-7xl">
+          <div className="grid gap-12 md:grid-cols-2 md:items-center">
+            {/* Text side */}
+            <div className="reveal-left">
+              <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">
+                {lang === "ar" ? "من نحن" : "About Us"}
+              </p>
+              <h2 className="mt-3 font-display text-4xl uppercase tracking-wider md:text-5xl">
+                {lang === "ar" ? "ياس استديو" : "YaStudio"}
+              </h2>
+              <p className="mt-6 max-w-lg text-sm leading-relaxed text-muted-foreground">
+                {lang === "ar"
+                  ? "بـ ياس استديو اهتمّينا بكل تفصيل من أجواء الاستديو وطريقة الاستقبال وراحة المكان إلى الدقة بكل لمسة حتى يكون وقتك ويانه مميز من البداية للنهاية."
+                  : "At YaStudio, we pay attention to every detail — from the atmosphere of the studio and the way you're welcomed, to the comfort of the space and the precision of every cut."}
+              </p>
+              <p className="mt-4 max-w-lg text-sm leading-relaxed text-muted-foreground">
+                {lang === "ar"
+                  ? "هدفنا نطلع كل شخص بأفضل نسخة من نفسه. نختار الستايل اللي يناسب ملامحه وشخصيته وأسلوب حياته."
+                  : "Our goal is to bring out the best version of every client — choosing a style that complements their features, personality, and lifestyle."}
+              </p>
+              <Link
+                to="/about"
+                className="mt-8 inline-flex items-center gap-2 border border-foreground px-6 py-2.5 font-display text-xs uppercase tracking-widest hover:bg-foreground hover:text-background transition-colors duration-300"
+              >
+                {lang === "ar" ? "تعرّف علينا" : "Meet the Team"} <ChevronRight className="h-4 w-4" />
+              </Link>
+            </div>
+
+            {/* Barbers photo grid */}
+            {barbers && barbers.length > 0 && (
+              <div className="reveal-right grid grid-cols-2 gap-2">
+                {barbers.slice(0, 4).map((b, i) => (
+                  <div
+                    key={b.id}
+                    className={`overflow-hidden bg-muted ${
+                      i === 0 ? "aspect-[3/4]" : "aspect-square"
+                    }`}
+                    style={{ gridRow: i === 0 ? "span 2" : undefined }}
+                  >
+                    {b.photo_url ? (
+                      <img
+                        src={b.photo_url}
+                        alt={lang === "ar" ? b.name_ar : b.name_en}
+                        loading="lazy"
+                        className="h-full w-full object-cover transition-transform duration-700 hover:scale-105"
+                      />
+                    ) : (
+                      <div className="flex h-full items-center justify-center text-muted-foreground text-xs">
+                        {lang === "ar" ? b.name_ar : b.name_en}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       </section>
