@@ -11,6 +11,7 @@ import { SITE, formatIQD } from "@/lib/site-config";
 import heroVideo from "@/assets/hero-video.mp4";
 import { ChevronRight, Scissors, Calendar, User2, Check } from "lucide-react";
 import yasLogoWhite from "@/assets/yas-logo-white.png";
+import aboutImg from "@/assets/about.jpg";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -56,18 +57,6 @@ function Home() {
     },
   });
 
-  const { data: barbers } = useQuery({
-    queryKey: ["barbers", "teaser"],
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("barbers")
-        .select("id, name_ar, name_en, photo_url, sort_order")
-        .eq("active", true)
-        .order("sort_order")
-        .limit(4);
-      return data ?? [];
-    },
-  });
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -279,33 +268,15 @@ function Home() {
               </Link>
             </div>
 
-            {/* Barbers photo grid */}
-            {barbers && barbers.length > 0 && (
-              <div className="reveal-right grid grid-cols-2 gap-2">
-                {barbers.slice(0, 4).map((b, i) => (
-                  <div
-                    key={b.id}
-                    className={`overflow-hidden bg-muted ${
-                      i === 0 ? "aspect-[3/4]" : "aspect-square"
-                    }`}
-                    style={{ gridRow: i === 0 ? "span 2" : undefined }}
-                  >
-                    {b.photo_url ? (
-                      <img
-                        src={b.photo_url}
-                        alt={lang === "ar" ? b.name_ar : b.name_en}
-                        loading="lazy"
-                        className="h-full w-full object-cover transition-transform duration-700 hover:scale-105"
-                      />
-                    ) : (
-                      <div className="flex h-full items-center justify-center text-muted-foreground text-xs">
-                        {lang === "ar" ? b.name_ar : b.name_en}
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )}
+            {/* About image */}
+            <div className="reveal-right overflow-hidden border border-border bg-card w-full">
+              <img
+                src={aboutImg}
+                alt={lang === "ar" ? "ياس استديو" : "YaStudio"}
+                loading="lazy"
+                className="w-full h-auto block transition-transform duration-700 hover:scale-105"
+              />
+            </div>
           </div>
         </div>
       </section>

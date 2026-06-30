@@ -666,7 +666,7 @@ function BookingsTab() {
     const serviceName = lang === "ar" ? b.services?.name_ar : b.services?.name_en;
     return lang === "ar"
       ? `أهلاً ${b.customers?.name}، نرحب بك في ${SITE.nameAr}.\nتم تأكيد حجزك:\nالتاريخ: ${date}\nالوقت: ${time}\nالحلاق: ${barberName}\nالخدمة: ${serviceName}\nالسعر: ${formatIQD(b.price_iqd, "ar")}\nنراك قريباً!`
-      : `Welcome ${b.customers?.name}! This is ${SITE.nameEn}.\nYour booking is confirmed:\nDate: ${date}\nTime: ${time}\nBarber: ${barberName}\nService: ${serviceName}\nPrice: ${formatIQD(b.price_iqd, "en")}\nSee you soon!`;
+      : `Welcome ${b.customers?.name}! This is ${SITE.nameEn}.\nYour booking is confirmed:\\nDate: ${date}\\nTime: ${time}\\nBarber: ${barberName}\\nService: ${serviceName}\\nPrice: ${formatIQD(b.price_iqd, "en")}\\nSee you soon!`;
   };
   const confirmAndNotify = async (b: any) => {
     await sb.from("bookings").update({ status: "confirmed" }).eq("id", b.id);

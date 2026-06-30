@@ -410,7 +410,7 @@ function BarberDashboard({ user }: { user: User }) {
           booking={endedSession}
           lang={lang}
           onClose={() => {
-            // Persist in localStorage — no DB change, admin still controls earnings
+            // Cosmetic only — localStorage persistence, admin controls DB earnings
             addStoredEnded(endedSession.id);
             setDoneSessions((prev) => new Set([...prev, endedSession.id]));
             setEndedSession(null);
