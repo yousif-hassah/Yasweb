@@ -16,8 +16,8 @@ export const dict = {
     bookNow: { en: "Book Now", ar: "احجز الآن" },
     portfolioTitle: { en: "Our Craft", ar: "أعمالنا" },
     portfolioBlurb: {
-      en: "A look at the cuts, fades and shaves coming out of the chair.",
-      ar: "نظرة على القصّات والفيد والحلاقات التي تخرج من كرسينا.",
+      en: "A look at the cuts, fades and shaves coming out of the YaStudio.",
+      ar: "نظرة على القصّات والفيد والحلاقات التي تخرج من ياس استديو.",
     },
     viewAll: { en: "View All", ar: "عرض الكل" },
     processTitle: { en: "How Booking Works", ar: "كيف يعمل الحجز" },
@@ -27,7 +27,7 @@ export const dict = {
     step4: { en: "Confirm with name + WhatsApp number", ar: "أكّد بالاسم ورقم واتساب" },
     bookingNote: {
       en: "We confirm every booking on WhatsApp. Sessions are 1h , daily 10:00 – 22:00.",
-      ar: "نؤكد كل حجز عبر واتساب. مدة الجلسة ساعة وربع، يومياً من 10:00 حتى 22:00.",
+      ar: "نؤكد كل حجز عبر واتساب. مدة الجلسة ساعة , يومياً من 10:00 حتى 22:00.",
     },
     startBooking: { en: "Start Booking", ar: "ابدأ الحجز" },
     shopHeading: { en: "From the Shop", ar: "من المتجر" },
@@ -53,8 +53,8 @@ export const dict = {
     noSlots: { en: "No times available — try another day.", ar: "لا توجد أوقات — جرب يوماً آخر." },
     success: { en: "Booking received!", ar: "تم استلام الحجز!" },
     successBody: {
-      en: "We'll confirm by WhatsApp shortly. You'll get a reminder 3 hours before your appointment.",
-      ar: "سنؤكد عبر واتساب قريباً. ستصلك رسالة تذكير قبل الموعد بثلاث ساعات.",
+      en: "We'll confirm by WhatsApp shortly. You'll get a reminder before your appointment.",
+      ar: "سنؤكد عبر واتساب قريباً. ستصلك رسالة تذكير قبل الموعد.",
     },
     bookAnother: { en: "Make Another Booking", ar: "حجز آخر" },
   },
@@ -154,8 +154,8 @@ export const dict = {
   },
   common: {
     footer: {
-      en: "Crafted with steel and patience.",
-      ar: "صُنع بالفولاذ والصبر.",
+      en: "At YaStudio, we pay attention to every detail.",
+      ar: "بـ ياس استديو اهتمّينا بكل تفصيل",
     },
     rights: { en: "All rights reserved.", ar: "جميع الحقوق محفوظة" },
   },
