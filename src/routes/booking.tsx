@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { useI18n } from "@/hooks/use-i18n";
 import { dict } from "@/lib/translations";
-import { SITE, formatIQD } from "@/lib/site-config";
+import { SITE, formatIQD, normalizePhoneDigits } from "@/lib/site-config";
 import { generateSlots, isSlotTaken, todayISO } from "@/lib/booking";
 import { toast } from "sonner";
 import { ChevronLeft, ChevronRight, Check } from "lucide-react";
@@ -300,7 +300,7 @@ function Booking() {
                   type="tel"
                   placeholder={dict.booking.phone[lang]}
                   value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
+                  onChange={(e) => setPhone(normalizePhoneDigits(e.target.value))}
                   className="border border-border bg-background p-3"
                 />
                 <textarea

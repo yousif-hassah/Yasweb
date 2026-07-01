@@ -31,8 +31,16 @@ export const formatIQD = (n: number, lang: "en" | "ar" = "en") => {
   return lang === "ar" ? `${formatted} د.ع` : `${formatted} IQD`;
 };
 
+export const normalizePhoneDigits = (phone: string): string => {
+  if (!phone) return "";
+  return phone
+    .replace(/[٠-٩]/g, (d) => String(d.charCodeAt(0) - 1632))
+    .replace(/[۰-۹]/g, (d) => String(d.charCodeAt(0) - 1776));
+};
+
 export const waLink = (phone: string, message: string) => {
-  const digits = phone.replace(/[^0-9]/g, "");
+  const normalized = normalizePhoneDigits(phone);
+  const digits = normalized.replace(/[^0-9]/g, "");
   const clean = digits.startsWith("00") ? digits.slice(2) : digits.startsWith("0") ? `964${digits.slice(1)}` : digits;
   return `https://wa.me/${clean}?text=${encodeURIComponent(message)}`;
 };

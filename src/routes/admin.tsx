@@ -638,7 +638,7 @@ function BookingsTab() {
   const filtered = (data as any[])
     .filter((b) => filter === "all" || b.status === filter)
     .filter((b) => !q || (b.customers?.name ?? "").toLowerCase().includes(q) || (b.customers?.phone ?? "").toLowerCase().includes(q));
-  const todayStr = new Date().toISOString().slice(0, 10);
+  const todayStr = (() => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`; })();
   const todays = useMemo(
     () => data.filter((b: any) => (b.starts_at ?? "").slice(0, 10) === todayStr)
                .sort((a: any, b: any) => a.starts_at.localeCompare(b.starts_at)),
@@ -660,13 +660,11 @@ function BookingsTab() {
     refetch();
   };
   const buildConfirmMsg = (b: any) => {
-    const time = new Date(b.starts_at).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true });
-    const date = new Date(b.starts_at).toLocaleDateString("en-GB");
-    const barberName = lang === "ar" ? b.barbers?.name_ar : b.barbers?.name_en;
-    const serviceName = lang === "ar" ? b.services?.name_ar : b.services?.name_en;
-    return lang === "ar"
-      ? `أهلاً ${b.customers?.name}، نرحب بك في ${SITE.nameAr}.\nتم تأكيد حجزك:\nالتاريخ: ${date}\nالوقت: ${time}\nالحلاق: ${barberName}\nالخدمة: ${serviceName}\nالسعر: ${formatIQD(b.price_iqd, "ar")}\nنراك قريباً!`
-      : `Welcome ${b.customers?.name}! This is ${SITE.nameEn}.\nYour booking is confirmed:\\nDate: ${date}\\nTime: ${time}\\nBarber: ${barberName}\\nService: ${serviceName}\\nPrice: ${formatIQD(b.price_iqd, "en")}\\nSee you soon!`;
+    const time = new Date(b.starts_at).toLocaleTimeString("ar-IQ", { hour: "numeric", minute: "2-digit", hour12: true });
+    const date = new Date(b.starts_at).toLocaleDateString("ar-IQ");
+    const barberName = b.barbers?.name_ar ?? b.barbers?.name_en;
+    const serviceName = b.services?.name_ar ?? b.services?.name_en;
+    return `أهلاً ${b.customers?.name}\n\nنرحب بك في *${SITE.nameAr}*\n\n*تم تأكيد حجزك بنجاح*\n\nالتاريخ: ${date}\nالوقت: ${time}\nالحلاق: ${barberName}\nالخدمة: ${serviceName}\nالسعر: ${formatIQD(b.price_iqd, "ar")}\n\nموقعنا على الخريطة:\n${SITE.mapsUrl}\n\nنراك قريباً!`;
   };
   const confirmAndNotify = async (b: any) => {
     await sb.from("bookings").update({ status: "confirmed" }).eq("id", b.id);
@@ -708,9 +706,7 @@ function BookingsTab() {
             const time = new Date(b.starts_at).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true });
             const barberName = lang === "ar" ? b.barbers?.name_ar : b.barbers?.name_en;
             const serviceName = lang === "ar" ? b.services?.name_ar : b.services?.name_en;
-            const welcomeMsg = lang === "ar"
-              ? `أهلاً ${b.customers?.name}، نرحب بك في ${SITE.nameAr}. حجزك اليوم الساعة ${time} مع ${barberName} (${serviceName}). نراك قريباً!`
-              : `Welcome ${b.customers?.name}! This is ${SITE.nameEn}. Your booking is confirmed today at ${time} with ${barberName} (${serviceName}). See you soon!`;
+            const welcomeMsg = `تذكير\n\nأهلاً ${b.customers?.name}\n\nنذكّرك بموعدك اليوم في *${SITE.nameAr}*\n\nالوقت: ${time}\nالحلاق: ${barberName}\nالخدمة: ${serviceName}\n\nموقعنا على الخريطة:\n${SITE.mapsUrl}\n\nنراك قريباً!`;
             return (
               <div key={b.id} className="flex flex-wrap items-center justify-between gap-2 rounded border border-border bg-background p-3">
                 <a
@@ -1353,25 +1349,26 @@ function OrdersTab() {
     refetch();
   };
 
-  /** Build a full-detail WhatsApp confirmation message */
+  /** Build a full-detail WhatsApp confirmation message (Arabic) */
   const buildWaMessage = (o: any) => {
     const lines: string[] = [];
-    lines.push("🏮 *YAS Barbershop — Order Confirmation*");
+    lines.push(`أهلاً ${o.customer_name}`);
     lines.push("");
-    lines.push(`👤 *${o.customer_name}*`);
-    lines.push(`📞 ${o.customer_phone}`);
-    lines.push(`📍 ${o.customer_address} — ${o.governorate}`);
+    lines.push(`*تم تأكيد طلبك في ${SITE.nameAr}*`);
     lines.push("");
-    lines.push("🛍 *Order Details:*");
+    lines.push(`الهاتف: ${o.customer_phone}`);
+    lines.push(`العنوان: ${o.customer_address} — ${o.governorate}`);
+    lines.push("");
+    lines.push("*تفاصيل الطلب:*");
     (o.order_items ?? []).forEach((it: any) => {
       const variant = [it.color, it.size].filter(Boolean).join(" / ");
-      lines.push(`• ${it.product_name}${variant ? ` (${variant})` : ""} × ${it.quantity} — ${formatIQD(it.price_iqd * it.quantity)}`);
+      lines.push(`- ${it.product_name}${variant ? ` (${variant})` : ""} x ${it.quantity} — ${formatIQD(it.price_iqd * it.quantity, "ar")}`);
     });
     lines.push("");
-    lines.push(`💰 *Total: ${formatIQD(o.total_iqd)}*`);
-    if (o.notes) lines.push(`📝 Notes: ${o.notes}`);
+    lines.push(`*الإجمالي: ${formatIQD(o.total_iqd, "ar")}*`);
+    if (o.notes) lines.push(`ملاحظات: ${o.notes}`);
     lines.push("");
-    lines.push("✅ Your order has been confirmed. We will contact you soon. Thank you! 🙏");
+    lines.push("سنتواصل معك قريباً للتوصيل. شكراً لثقتك بنا!");
     return lines.join("\n");
   };
 
