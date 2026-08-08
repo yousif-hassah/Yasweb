@@ -7,6 +7,7 @@ import { dict } from "@/lib/translations";
 import { SITE, normalizePhoneDigits } from "@/lib/site-config";
 import { toast } from "sonner";
 import { Mail, MapPin, Phone } from "lucide-react";
+import { PhoneInputWithCountry } from "@/components/ui/phone-input-with-country";
 
 export const Route = createFileRoute("/contact")({
   head: () => ({
@@ -61,7 +62,7 @@ function Contact() {
           ) : (
             <>
               <input className="w-full border border-border bg-background p-3 text-sm" placeholder={dict.booking.name[lang]} value={name} onChange={(e) => setName(e.target.value)} />
-              <input className="mt-3 w-full border border-border bg-background p-3 text-sm" placeholder={dict.booking.phone[lang]} value={phone} onChange={(e) => setPhone(normalizePhoneDigits(e.target.value))} />
+              <PhoneInputWithCountry className="mt-3" value={phone} onChange={setPhone} lang={lang} />
               <textarea className="mt-3 w-full border border-border bg-background p-3 text-sm" rows={5} placeholder={dict.contact.message[lang]} value={message} onChange={(e) => setMessage(e.target.value)} />
               <button onClick={submit} disabled={submitting || !name || !phone || !message} className="mt-4 w-full bg-primary py-3 text-sm uppercase tracking-widest text-primary-foreground disabled:opacity-30">
                 {dict.contact.send[lang]}

@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import { ChevronLeft, ChevronRight, Check } from "lucide-react";
 import type { Lang } from "@/lib/translations";
 import { getMediaUrl } from "@/lib/image-utils";
+import { PhoneInputWithCountry } from "@/components/ui/phone-input-with-country";
 
 const DAY_NAMES_EN = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const DAY_NAMES_AR = ["الأحد", "الاثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
@@ -375,12 +376,10 @@ function Booking() {
                   onChange={(e) => setName(e.target.value)}
                   className="border border-border bg-background p-3"
                 />
-                <input
-                  type="tel"
-                  placeholder={dict.booking.phone[lang]}
+                <PhoneInputWithCountry
                   value={phone}
-                  onChange={(e) => setPhone(normalizePhoneDigits(e.target.value))}
-                  className="border border-border bg-background p-3"
+                  onChange={setPhone}
+                  lang={lang}
                 />
                 <textarea
                   placeholder={dict.booking.notes[lang]}

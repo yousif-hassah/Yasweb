@@ -719,7 +719,7 @@ function BookingsTab() {
           .select("id")
           .or(`name.ilike.%${trimmed}%,phone.ilike.%${trimmed}%`);
         
-        const customerIds = matchedCustomers?.map((c) => c.id) ?? [];
+        const customerIds = matchedCustomers?.map((c: any) => c.id) ?? [];
         if (customerIds.length === 0) {
           return [];
         }
@@ -1096,6 +1096,53 @@ function BookingsTab() {
         </div>
       </div>
 
+      {/* Daily Customer Feedback / Review Requests */}
+      <div className="mb-6 rounded border border-indigo-500/40 bg-indigo-500/5 p-4">
+        <div className="flex items-center justify-between">
+          <span className="rounded-full bg-indigo-600 px-3 py-1 text-xs uppercase tracking-widest text-white">
+            {todays.length}
+          </span>
+          <h3 className="font-display text-xl uppercase tracking-wider">
+            {lang === "ar" ? "قائمة طلبات آراء الزبائن اليومية" : "Daily Customer Feedback Requests"}
+          </h3>
+        </div>
+        <p className="mt-1 text-end text-xs text-muted-foreground">
+          {lang === "ar"
+            ? "قائمة بزبائن اليوم لإرسال طلب تقييم الخدمة والرأي عبر واتساب."
+            : "Daily list of today's customers to send a service review/feedback request via WhatsApp."}
+        </p>
+        <div className="mt-3 space-y-2">
+          {todays.length === 0 && (
+            <div className="text-end text-sm text-muted-foreground">
+              {lang === "ar" ? "لا توجد حجوزات لليوم حتى الآن" : "No bookings for today yet"}
+            </div>
+          )}
+          {todays.map((b: any) => {
+            const time = new Date(b.starts_at).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true });
+            const barberName = lang === "ar" ? b.barbers?.name_ar : b.barbers?.name_en;
+            const serviceName = lang === "ar" ? b.services?.name_ar : b.services?.name_en;
+            return (
+              <div key={b.id} className="flex flex-wrap items-center justify-between gap-2 rounded border border-indigo-500/20 bg-background p-3">
+                <a
+                  href={waLink(b.customers?.phone ?? "", buildFeedbackMsg(b))}
+                  target="_blank"
+                  rel="noreferrer"
+                  onClick={(e) => { e.preventDefault(); openWaLink(b.customers?.phone ?? "", buildFeedbackMsg(b)); }}
+                  className="inline-flex items-center gap-2 bg-indigo-600 px-3 py-2 text-xs font-medium uppercase tracking-widest text-white hover:bg-indigo-700"
+                >
+                  <MessageSquare className="h-3.5 w-3.5" />
+                  {lang === "ar" ? "إرسال طلب رأي عبر واتساب" : "Send Feedback Request"}
+                </a>
+                <div className="text-end text-sm">
+                  <div className="font-semibold">{time} · {b.customers?.name} <span className="text-muted-foreground">({b.customers?.phone})</span></div>
+                  <div className="text-xs text-muted-foreground">{barberName} · {serviceName}</div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
       {/* New / Unconfirmed bookings */}
       <div className="mb-6 rounded border border-amber-500/50 bg-amber-500/5 p-4">
         <div className="flex items-center justify-between">
@@ -1249,7 +1296,6 @@ function BookingsTab() {
                       <button onClick={() => setStatus(b.id, "paid")} className="bg-emerald-600 px-2 py-1 text-xs font-medium text-white hover:bg-emerald-700">Done</button>
                       <button onClick={() => setStatus(b.id, "cancelled")} className="bg-amber-500 px-2 py-1 text-xs font-medium text-white hover:bg-amber-600">Cancel</button>
                       <button onClick={() => setStatus(b.id, "no_show", b.customer_id)} className="border border-destructive bg-destructive/10 px-2 py-1 text-xs text-destructive hover:bg-destructive/20">No-show</button>
-                      <button onClick={() => openWaLink(b.customers?.phone ?? "", buildFeedbackMsg(b))} className="bg-indigo-600 px-2 py-1 text-xs font-medium text-white hover:bg-indigo-700">{lang === "ar" ? "طلب رأي" : "Feedback"}</button>
                       <button onClick={() => setEditing({ ...b })} className="border border-border px-2 py-1 text-xs hover:bg-card">Edit</button>
                       <button onClick={() => deleteBooking(b.id)} className="border border-destructive px-2 py-1 text-xs text-destructive hover:bg-destructive/10">Delete</button>
                     </div>

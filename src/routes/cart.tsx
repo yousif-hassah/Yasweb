@@ -9,6 +9,7 @@ import { formatIQD, SITE, normalizePhoneDigits } from "@/lib/site-config";
 import { IRAQI_GOVERNORATES } from "@/lib/governorates";
 import { toast } from "sonner";
 import { Check, Trash2 } from "lucide-react";
+import { PhoneInputWithCountry } from "@/components/ui/phone-input-with-country";
 
 export const Route = createFileRoute("/cart")({
   head: () => ({ meta: [{ title: `Cart | عربة التسوق — ${SITE.nameEn}` }] }),
@@ -211,7 +212,7 @@ function Cart() {
               <input className="mt-3 w-full border border-border bg-background p-3 text-sm" placeholder={dict.shop.address[lang]} value={address} onChange={(e) => setAddress(e.target.value)} />
               <textarea className="mt-3 w-full border border-border bg-background p-3 text-sm" rows={2} placeholder={dict.booking.notes[lang]} value={notes} onChange={(e) => setNotes(e.target.value)} />
               <input className="mt-3 w-full border border-border bg-background p-3 text-sm" placeholder={dict.booking.name[lang]} value={name} onChange={(e) => setName(e.target.value)} />
-              <input className="mt-3 w-full border border-border bg-background p-3 text-sm" placeholder={dict.booking.phone[lang]} value={phone} onChange={(e) => setPhone(normalizePhoneDigits(e.target.value))} />
+              <PhoneInputWithCountry className="mt-3" value={phone} onChange={setPhone} lang={lang} />
               <p className="mt-3 text-xs text-muted-foreground">{dict.shop.paymentNote[lang]}</p>
               <button
                 onClick={submit}
