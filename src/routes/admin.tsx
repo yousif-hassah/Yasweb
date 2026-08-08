@@ -8,7 +8,7 @@ import { dict } from "@/lib/translations";
 import { formatIQD, openWaLink, SITE, waLink } from "@/lib/site-config";
 import { generateSlots } from "@/lib/booking";
 import { toast } from "sonner";
-import { convertToWebP, getMediaUrl } from "@/lib/image-utils";
+import { convertToWebP, getMediaUrl, uploadToR2 } from "@/lib/image-utils";
 import type { User } from "@supabase/supabase-js";
 import {
   MessageSquare, Users, Megaphone, Image as ImageIcon, Layers,
@@ -242,13 +242,9 @@ function BarberForm({ initial, onCancel, onSaved }: { initial: any; onCancel: ()
   const uploadPhoto = async (file: File) => {
     setUploading(true);
     try {
-      const webpFile = await convertToWebP(file);
-      const path = `${Date.now()}-${webpFile.name.replace(/\s+/g, "-")}`;
-      const { error: upErr } = await sb.storage.from("barbers").upload(path, webpFile, { upsert: true });
-      if (upErr) throw upErr;
-      const { data: pub } = sb.storage.from("barbers").getPublicUrl(path);
-      set("photo_url", pub.publicUrl);
-      toast.success("Photo uploaded (WebP)");
+      const url = await uploadToR2(file, "barbers");
+      set("photo_url", url);
+      toast.success("Photo uploaded to Cloudflare R2 (WebP)");
     } catch (e: any) { toast.error(e.message); } finally { setUploading(false); }
   };
   const save = async () => {
@@ -523,16 +519,11 @@ function PortfolioTab() {
     setBusy(true);
     try {
       const isVideo = file.type.startsWith("video");
-      // Only convert images — videos are uploaded as-is
-      const uploadFile = isVideo ? file : await convertToWebP(file);
-      const path = `${Date.now()}-${uploadFile.name}`;
-      const { error: upErr } = await sb.storage.from("portfolio").upload(path, uploadFile);
-      if (upErr) throw upErr;
-      const { data: pub } = sb.storage.from("portfolio").getPublicUrl(path);
+      const url = await uploadToR2(file, "portfolio");
       const type = isVideo ? "video" : "image";
-      const { error } = await sb.from("portfolio_items").insert({ url: pub.publicUrl, type, title_en: title, title_ar: title });
+      const { error } = await sb.from("portfolio_items").insert({ url, type, title_en: title, title_ar: title });
       if (error) throw error;
-      toast.success(isVideo ? "Uploaded" : "Uploaded (WebP)");
+      toast.success(isVideo ? "Uploaded to R2" : "Uploaded to R2 (WebP)");
       setFile(null); setTitle(""); refetch();
     } catch (e: any) { toast.error(e.message); } finally { setBusy(false); }
   };
@@ -1632,15 +1623,9 @@ function ProductForm({ initial, cats, onCancel, onSaved }: { initial: any; cats:
   const uploadImage = async (file: File) => {
     setUploading(true);
     try {
-      // Convert to WebP in-browser before uploading — avoids non-ASCII issues
-      // in Supabase storage paths (em dashes, Arabic chars, etc.)
-      const webpFile = await convertToWebP(file);
-      const path = `${Date.now()}.webp`;
-      const { error: upErr } = await sb.storage.from("products").upload(path, webpFile, { upsert: true });
-      if (upErr) throw upErr;
-      const { data: pub } = sb.storage.from("products").getPublicUrl(path);
-      set("image_url", pub.publicUrl);
-      toast.success("Image uploaded (WebP)");
+      const url = await uploadToR2(file, "products");
+      set("image_url", url);
+      toast.success("Image uploaded to Cloudflare R2 (WebP)");
     } catch (e: any) { toast.error(e.message); } finally { setUploading(false); }
   };
   const save = async () => {

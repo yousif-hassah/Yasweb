@@ -109,10 +109,44 @@ export function convertToWebP(
  */
 export function getMediaUrl(url: string | null | undefined): string {
   if (!url) return "";
+  // If it's an R2 CDN URL or any external absolute URL, serve directly
+  if (url.startsWith("https://cdn.yastudio.org") || url.startsWith("http://") || url.startsWith("https://")) {
+    return url;
+  }
+  // If it's a relative path starting with /, prefix with our R2 CDN
+  if (url.startsWith("/")) {
+    return `https://cdn.yastudio.org${url}`;
+  }
   // Check if it's a Supabase storage URL (public access path)
   if (url.includes("supabase.co/storage/v1/object/public/")) {
     return `/api/media?url=${encodeURIComponent(url)}`;
   }
   return url;
+}
+
+/**
+ * Helper to upload a file directly to Cloudflare R2 via our /api/upload endpoint.
+ * Automatically converts images to WebP if applicable.
+ */
+export async function uploadToR2(file: File, folder: string = "general"): Promise<string> {
+  const isImage = file.type.startsWith("image/");
+  const fileToUpload = isImage ? await convertToWebP(file) : file;
+
+  const formData = new FormData();
+  formData.append("file", fileToUpload);
+  formData.append("folder", folder);
+
+  const res = await fetch("/api/upload", {
+    method: "POST",
+    body: formData,
+  });
+
+  if (!res.ok) {
+    const errData = await res.json().catch(() => ({}));
+    throw new Error(errData.error || "Upload failed");
+  }
+
+  const data = await res.json();
+  return data.url;
 }
 
