@@ -114,8 +114,11 @@ function Booking() {
   const { data: bookings = [], refetch: refetchBookings } = useQuery({
     queryKey: ["bookings", date],
     queryFn: async () => {
-      const start = `${date}T00:00:00`;
-      const end = `${date}T23:59:59`;
+      // Use explicit Baghdad offset (+03:00) so Postgres filters by local date,
+      // not UTC date. Without this a 12PM booking (09:00 UTC) could appear on
+      // the wrong day when the UTC date differs from the Baghdad date.
+      const start = `${date}T00:00:00+03:00`;
+      const end = `${date}T23:59:59+03:00`;
       const { data } = await supabase
         .from("bookings")
         .select("starts_at, ends_at, barber_id, status")

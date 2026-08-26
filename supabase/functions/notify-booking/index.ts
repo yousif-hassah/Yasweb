@@ -57,10 +57,26 @@ serve(async (req) => {
     const serviceName = service ? `${service.name_ar} / ${service.name_en}` : "غير محدد";
     
     // Format starts_at date to a readable string (Baghdad Time UTC+3)
-    const startsAtDate = new Date(record.starts_at);
-    const baghdadTime = new Date(startsAtDate.getTime() + 3 * 60 * 60 * 1000);
-    const dateStr = baghdadTime.toISOString().slice(0, 10);
-    const timeStr = baghdadTime.toISOString().slice(11, 16);
+    // IMPORTANT: Always treat starts_at as UTC by ensuring the string ends with Z.
+    // Without this, Deno may parse a bare "YYYY-MM-DDTHH:MM:SS" string as local
+    // server time instead of UTC, causing the Baghdad offset to be applied twice
+    // or not at all — producing wrong times in the notification email.
+    const rawStarts = String(record.starts_at ?? "");
+    const utcString = rawStarts.endsWith("Z") || rawStarts.includes("+")
+      ? rawStarts           // already has explicit offset — leave as-is
+      : rawStarts + "Z";    // bare string → force UTC
+    const startsAtDate = new Date(utcString);
+    const baghdadOffsetMs = 3 * 60 * 60 * 1000;
+    const baghdadTime = new Date(startsAtDate.getTime() + baghdadOffsetMs);
+    // Use getUTC* so we read the Baghdad-shifted value, not the server's local offset
+    const bH  = baghdadTime.getUTCHours();
+    const bMin = baghdadTime.getUTCMinutes();
+    const period = bH >= 12 ? "م" : "ص";
+    const h12   = ((bH + 11) % 12) + 1;
+    const timeStr = `${h12}:${String(bMin).padStart(2, "0")} ${period}`;
+    const dateStr = `${baghdadTime.getUTCFullYear()}-${String(baghdadTime.getUTCMonth() + 1).padStart(2, "0")}-${String(baghdadTime.getUTCDate()).padStart(2, "0")}`;
+    // Human-readable date for the email (DD/MM/YYYY)
+    const dateHuman = `${String(baghdadTime.getUTCDate()).padStart(2, "0")}/${String(baghdadTime.getUTCMonth() + 1).padStart(2, "0")}/${baghdadTime.getUTCFullYear()}`;
 
     const priceIqd = record.price_iqd ? `${record.price_iqd.toLocaleString()} IQD` : "0 IQD";
     const notes = record.notes ? record.notes : "لا توجد ملاحظات";
@@ -121,7 +137,7 @@ serve(async (req) => {
       </tr>
       <tr>
         <td class="label">التاريخ والوقت:</td>
-        <td><strong>${dateStr}</strong> في تمام الساعة <strong>${timeStr}</strong> (بتوقيت بغداد)</td>
+        <td><strong>${dateHuman}</strong> في تمام الساعة <strong>${timeStr}</strong> (بتوقيت بغداد)</td>
       </tr>
       <tr>
         <td class="label">السعر:</td>

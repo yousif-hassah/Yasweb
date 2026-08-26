@@ -19,6 +19,29 @@ import {
 
 const sb = supabase as any;
 
+/**
+ * Formats a UTC timestamp string to Baghdad local time (UTC+3).
+ * Completely independent of the device/browser timezone.
+ */
+function fmtBaghdad(isoStr: string, opts: { date?: boolean; time?: boolean } = { date: true, time: true }): string {
+  const raw = String(isoStr ?? "");
+  const utcStr = raw.endsWith("Z") || raw.includes("+") ? raw : raw + "Z";
+  const utc = new Date(utcStr);
+  const bTime = new Date(utc.getTime() + 3 * 60 * 60 * 1000); // UTC+3
+  const yy = bTime.getUTCFullYear();
+  const mo = String(bTime.getUTCMonth() + 1).padStart(2, "0");
+  const dd = String(bTime.getUTCDate()).padStart(2, "0");
+  const h24 = bTime.getUTCHours();
+  const mn = String(bTime.getUTCMinutes()).padStart(2, "0");
+  const period = h24 >= 12 ? "PM" : "AM";
+  const h12 = ((h24 + 11) % 12) + 1;
+  const timePart = `${h12}:${mn} ${period}`;
+  const datePart = `${dd}/${mo}/${yy}`;
+  if (opts.date && opts.time) return `${datePart}, ${timePart}`;
+  if (opts.date) return datePart;
+  return timePart;
+}
+
 export const Route = createFileRoute("/admin")({
   head: () => ({ meta: [{ title: `Admin — ${SITE.nameEn}` }] }),
   component: Admin,
@@ -1062,10 +1085,10 @@ function BookingsTab() {
         <div className="mt-3 space-y-2">
           {todays.length === 0 && <div className="text-end text-sm text-muted-foreground">—</div>}
           {todays.map((b: any) => {
-            const time = new Date(b.starts_at).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true });
+            const time = fmtBaghdad(b.starts_at, { date: false, time: true });
             const barberName = lang === "ar" ? b.barbers?.name_ar : b.barbers?.name_en;
             const serviceName = lang === "ar" ? b.services?.name_ar : b.services?.name_en;
-            const welcomeMsg = `تذكير\n\nأهلاً ${b.customers?.name}\n\nنذكّرك بموعدك اليوم في *${SITE.nameAr}*\n\nالوقت: ${time}\nالحلاق: ${barberName}\nالخدمة: ${serviceName}\n\nموقعنا على الخريطة:\n${SITE.mapsUrl}\n\nنراك قريباً!`;
+            const welcomeMsg = `تذكير\n\nأهلاً ${b.customers?.name}\n\nنذكّرك بموعدك اليوم في *${SITE.nameAr}*\n\nالوقت: ${time}\nالحلاق: ${barberName}\nالخدمة: ${serviceName}\n\nموقعنا على الخريطة:\n${SITE.mapsUrl}\n\n━━━━━━━━━━━━━━━━━━━\n*تنبيه — الالتزام بالوقت:*\n\nنحترم وقتك ونطلب منك احترام وقت بقية الزبائن.\n\nفي حال التأخر أكثر من *15 دقيقة* عن موعدك:\n\n• إما *تقليص الخدمة* بما يتناسب مع الوقت المتبقي\n• أو *إلغاء الحجز* وإعطاؤه لزبون آخر في الانتظار\n\nالالتزام بالوقت يضمن لك خدمة كاملة وتجربة مريحة.\n━━━━━━━━━━━━━━━━━━━\n\nنراك قريباً!`;
             return (
               <div key={b.id} className="flex flex-wrap items-center justify-between gap-2 rounded border border-border bg-background p-3">
                 <a
@@ -1109,7 +1132,7 @@ function BookingsTab() {
             </div>
           )}
           {todays.map((b: any) => {
-            const time = new Date(b.starts_at).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true });
+            const time = fmtBaghdad(b.starts_at, { date: false, time: true });
             const barberName = lang === "ar" ? b.barbers?.name_ar : b.barbers?.name_en;
             const serviceName = lang === "ar" ? b.services?.name_ar : b.services?.name_en;
             return (
@@ -1151,7 +1174,7 @@ function BookingsTab() {
             </div>
           )}
           {unconfirmed.map((b: any) => {
-            const when = new Date(b.starts_at).toLocaleString("en-GB", { hour: "numeric", minute: "2-digit", hour12: true, day: "2-digit", month: "2-digit", year: "numeric" });
+            const when = fmtBaghdad(b.starts_at);
             const barberName = lang === "ar" ? b.barbers?.name_ar : b.barbers?.name_en;
             const serviceName = lang === "ar" ? b.services?.name_ar : b.services?.name_en;
             return (
@@ -1248,7 +1271,7 @@ function BookingsTab() {
               const isConfirmed = b.status === "confirmed" || b.status === "paid";
               return (
                 <tr key={b.id} className={`border-t border-border align-top ${isConfirmed ? "bg-emerald-500/5" : b.status === "pending" ? "bg-amber-500/5" : ""}`}>
-                  <td className="p-3 whitespace-nowrap">{new Date(b.starts_at).toLocaleString("en-GB", { hour: "numeric", minute: "2-digit", hour12: true, day: "2-digit", month: "2-digit", year: "numeric" })}</td>
+                  <td className="p-3 whitespace-nowrap">{fmtBaghdad(b.starts_at)}</td>
                   <td className="p-3">
                     <div className="flex items-center gap-1.5">
                       {b.status === "pending" && (
