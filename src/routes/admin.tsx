@@ -6,7 +6,7 @@ import { SiteLayout } from "@/components/site/SiteLayout";
 import { useI18n } from "@/hooks/use-i18n";
 import { dict } from "@/lib/translations";
 import { formatIQD, openWaLink, SITE, waLink } from "@/lib/site-config";
-import { generateSlots } from "@/lib/booking";
+import { generateSlots, makeBaghdadDate, format12hHour } from "@/lib/booking";
 import { toast } from "sonner";
 import { convertToWebP, getMediaUrl, uploadToR2 } from "@/lib/image-utils";
 import type { User } from "@supabase/supabase-js";
@@ -1391,28 +1391,25 @@ function EditBookingModal({
   const allSlots = (() => {
     const [y, m, d] = currentDay.split("-").map(Number);
     const result: { startsAt: Date; endsAt: Date; label: string }[] = [];
-    let cursor = new Date(y, m - 1, d, SITE.openingHourLocal, 0, 0, 0);
-    const close = new Date(y, m - 1, d, SITE.closingHourLocal, 0, 0, 0);
-    while (cursor.getTime() + SITE.slotMinutes * 60_000 <= close.getTime()) {
-      const end = new Date(cursor.getTime() + SITE.slotMinutes * 60_000);
-      const h = cursor.getHours();
-      const min = cursor.getMinutes();
-      const period = h >= 12 ? "PM" : "AM";
-      const h12 = ((h + 11) % 12) + 1;
-      const label = `${h12}:${String(min).padStart(2,"0")} ${period}`;
-      result.push({ startsAt: new Date(cursor), endsAt: end, label });
-      cursor = new Date(cursor.getTime() + SITE.slotMinutes * 60_000);
+    if (!y || !m || !d) return result;
+    let hour = SITE.openingHourLocal;
+    const slotStepHours = SITE.slotMinutes / 60;
+    while (hour + slotStepHours <= SITE.closingHourLocal) {
+      const startsAt = makeBaghdadDate(y, m, d, hour, 0);
+      const endsAt = makeBaghdadDate(y, m, d, hour + Math.floor(slotStepHours), SITE.slotMinutes % 60);
+      result.push({ startsAt, endsAt, label: format12hHour(hour) });
+      hour += slotStepHours;
     }
     return result;
   })();
 
   const selectedSlotLabel = editing.starts_at
     ? (() => {
-        const h = new Date(editing.starts_at).getHours();
-        const min = new Date(editing.starts_at).getMinutes();
-        const period = h >= 12 ? "PM" : "AM";
-        const h12 = ((h + 11) % 12) + 1;
-        return `${h12}:${String(min).padStart(2,"0")} ${period}`;
+        const raw = String(editing.starts_at);
+        const iso = raw.endsWith("Z") || raw.includes("+") ? raw : raw + "Z";
+        const utc = new Date(iso);
+        const bDate = new Date(utc.getTime() + 3 * 60 * 60 * 1000);
+        return format12hHour(bDate.getUTCHours(), bDate.getUTCMinutes());
       })()
     : null;
 

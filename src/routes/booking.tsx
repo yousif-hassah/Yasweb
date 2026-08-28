@@ -185,8 +185,18 @@ function Booking() {
       const cachedBlocked = allBlockedDays.filter(
         (d) => d.date === date && (d.barber_id === null || d.barber_id === barberId),
       );
-      if (cachedBlocked.length > 0) {
-        throw new Error(lang === "ar" ? "عذراً، هذا اليوم مغلق للحجوزات." : "Sorry, this day is closed for bookings.");
+      // Validate that slot starts on top of the hour within shop opening hours (Baghdad time)
+      const slotUtc = new Date(currentSlot.startsAt.toISOString());
+      const baghdadDate = new Date(slotUtc.getTime() + 3 * 60 * 60 * 1000);
+      const bHour = baghdadDate.getUTCHours();
+      const bMin = baghdadDate.getUTCMinutes();
+
+      if (bMin !== 0 || bHour < SITE.openingHourLocal || bHour >= SITE.closingHourLocal) {
+        throw new Error(
+          lang === "ar"
+            ? "عذراً، الموعد المختار غير متاح ضمن ساعات العمل الرسمية."
+            : "Sorry, the selected time slot is outside shop working hours."
+        );
       }
 
       // Double check for double booking/overlap in DB
